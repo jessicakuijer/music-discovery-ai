@@ -122,30 +122,46 @@ def search_youtube_videos(artist_name: str, track_name: str, youtube_api_key: st
         if not youtube_api_key:
             return None
             
-        # Nettoie le nom de la track pour la recherche
-        clean_track = re.sub(r'[^\w\s]', '', track_name)
-        clean_artist = re.sub(r'[^\w\s]', '', artist_name)
+        # Stratégie de recherche multiple - commence par la plus spécifique
+        search_queries = [
+            f'"{artist_name}" "{track_name}" official',  # Plus spécifique
+            f"{artist_name} {track_name} official",      # Moins de guillemets
+            f"{artist_name} {track_name}",               # Sans "official"
+            f'"{artist_name}" official',                 # Juste l'artiste
+            artist_name                                  # Nom d'artiste seul
+        ]
         
-        # Requête de recherche YouTube
-        search_query = f"{clean_artist} {clean_track}"
         youtube_search_url = "https://www.googleapis.com/youtube/v3/search"
         
-        params = {
-            'part': 'snippet',
-            'q': search_query,
-            'type': 'video',
-            'maxResults': 1,
-            'key': youtube_api_key,
-            'order': 'relevance'
-        }
-        
-        response = requests.get(youtube_search_url, params=params)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data['items']:
-                video_id = data['items'][0]['id']['videoId']
-                return f"https://www.youtube.com/watch?v={video_id}"
+        for query in search_queries:
+            try:
+                params = {
+                    'part': 'snippet',
+                    'q': query,
+                    'type': 'video',
+                    'maxResults': 3,  # Plus de résultats pour choisir
+                    'key': youtube_api_key,
+                    'order': 'relevance',
+                    'videoDuration': 'any',
+                    'videoEmbeddable': 'true'  # Assure que la vidéo est embeddable
+                }
+                
+                response = requests.get(youtube_search_url, params=params, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('items'):
+                        # Prend la première vidéo trouvée
+                        video_id = data['items'][0]['id']['videoId']
+                        return f"https://www.youtube.com/watch?v={video_id}"
+                elif response.status_code == 403:
+                    # Quota dépassé ou clé invalide
+                    st.warning("⚠️ Quota YouTube API dépassé ou clé invalide")
+                    return None
+                    
+            except Exception as e:
+                # Continue avec la prochaine requête
+                continue
         
         return None
     except Exception as e:
