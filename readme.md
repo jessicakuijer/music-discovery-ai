@@ -19,10 +19,9 @@ Application Streamlit qui utilise l'IA pour découvrir de nouveaux artistes bas�
    - Cliquez "Create app"
    - Nom : `Music Discovery AI`
    - Description : `AI-powered music discovery app`
-   - Website : https://votre-app.streamlit.app (ou http://localhost:8501 pour tests)
+   - Website : https://votre-app.streamlit.app
    - Redirect URIs : AJOUTEZ CES 2 LIGNES :
-     - http://localhost:8501
-     - https://votre-app.streamlit.app
+     - https://votre-app.streamlit.app/callback
    - API utilisée : `Web API`
 
 2. **Récupérer les clés** :

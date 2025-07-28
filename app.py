@@ -7,6 +7,7 @@ import json
 from typing import List, Dict, Optional
 import time
 import base64
+import re
 
 # Configuration de la page
 st.set_page_config(
@@ -19,10 +20,6 @@ st.set_page_config(
 # CSS personnalisé
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-    html, body, .main-header, .artist-card, .recommendation-card, .analysis-card, .track-card {
-        font-family: 'Montserrat', sans-serif !important;
-    }
     .main-header {
         background: linear-gradient(135deg, #1db954 0%, #191414 100%);
         padding: 2rem;
@@ -30,58 +27,42 @@ st.markdown("""
         color: white;
         text-align: center;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 24px rgba(29,185,84,0.10);
     }
+    
     .artist-card {
         background: #f8f9ff;
         padding: 1.5rem;
         border-radius: 15px;
         border-left: 4px solid #1db954;
         margin: 1rem 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        transition: box-shadow 0.3s, transform 0.3s;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    .artist-card:hover {
-        box-shadow: 0 8px 24px rgba(29,185,84,0.15);
-        transform: translateY(-4px) scale(1.02);
-    }
+    
     .recommendation-card {
         background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
         color: white;
         padding: 1.5rem;
         border-radius: 15px;
         margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(29, 185, 84, 0.18);
-        transition: box-shadow 0.3s, transform 0.3s;
+        box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3);
     }
-    .recommendation-card:hover {
-        box-shadow: 0 8px 24px rgba(29,185,84,0.22);
-        transform: translateY(-4px) scale(1.02);
-    }
+    
     .track-card {
         background: #f0f0f0;
         padding: 1rem;
         border-radius: 10px;
         margin: 0.5rem 0;
         border-left: 3px solid #1db954;
-        transition: box-shadow 0.3s, transform 0.3s;
     }
-    .track-card:hover {
-        box-shadow: 0 4px 12px rgba(29,185,84,0.10);
-        transform: scale(1.01);
-    }
+    
     .analysis-card {
         background: #e8f5e8;
         padding: 1.5rem;
         border-radius: 15px;
         border-left: 4px solid #28a745;
         margin: 1rem 0;
-        transition: box-shadow 0.3s, transform 0.3s;
     }
-    .analysis-card:hover {
-        box-shadow: 0 8px 24px rgba(40,167,69,0.13);
-        transform: translateY(-2px) scale(1.01);
-    }
+    
     .stButton > button {
         width: 100%;
         background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
@@ -91,77 +72,12 @@ st.markdown("""
         border-radius: 10px;
         font-weight: 600;
         font-size: 1rem;
-        transition: background 0.3s, box-shadow 0.3s;
     }
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #1ed760 0%, #1db954 100%);
-        box-shadow: 0 2px 8px rgba(29,185,84,0.18);
-    }
+    
     .spotify-embed {
         border-radius: 12px;
         overflow: hidden;
         margin: 1rem 0;
-    }
-    /* Responsive */
-    @media (max-width: 600px) {
-        .main-header, .artist-card, .recommendation-card, .analysis-card {
-            padding: 1rem;
-            font-size: 0.95rem;
-        }
-        .stButton > button {
-            font-size: 0.95rem;
-        }
-    }
-    /* Badges */
-    .badge {
-        display: inline-block;
-        padding: 0.25em 0.7em;
-        font-size: 0.85em;
-        font-weight: 600;
-        border-radius: 8px;
-        margin-right: 0.5em;
-        background: #1db954;
-        color: #fff;
-        vertical-align: middle;
-    }
-    .badge-genre { background: #191414; color: #fff; }
-    .badge-similar { background: #1db954; color: #fff; }
-    .badge-influence { background: #ffb300; color: #191414; }
-    .badge-creative { background: #00bcd4; color: #fff; }
-    .badge-surprise { background: #e91e63; color: #fff; }
-    /* Dark mode amélioré */
-    .dark-mode, .dark-mode .stApp, .dark-mode [data-testid="stAppViewContainer"] {
-        background: #191414 !important;
-        color: #e8f5e8 !important;
-    }
-    .dark-mode .stApp * {
-        color: #e8f5e8 !important;
-    }
-    .dark-mode .main-header {
-        background: linear-gradient(135deg, #232526 0%, #191414 100%);
-        color: #fff;
-    }
-    .dark-mode .artist-card, .dark-mode .recommendation-card, .dark-mode .analysis-card, .dark-mode .track-card {
-        background: #232526 !important;
-        color: #e8f5e8 !important;
-        border-left-color: #1db954 !important;
-    }
-    .dark-mode .recommendation-card {
-        background: linear-gradient(135deg, #232526 0%, #1db954 100%) !important;
-    }
-    .dark-mode .badge-genre { background: #fff; color: #191414; }
-    .dark-mode .badge-similar { background: #1db954; color: #fff; }
-    .dark-mode .badge-influence { background: #ffb300; color: #191414; }
-    .dark-mode .badge-creative { background: #00bcd4; color: #fff; }
-    .dark-mode .badge-surprise { background: #e91e63; color: #fff; }
-    .dark-mode input, .dark-mode textarea, .dark-mode select {
-        background: #232526 !important;
-        color: #e8f5e8 !important;
-        border: 1px solid #444 !important;
-    }
-    .dark-mode .stButton > button {
-        background: linear-gradient(135deg, #232526 0%, #1db954 100%) !important;
-        color: #e8f5e8 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -185,7 +101,70 @@ if 'recommendations' not in st.session_state:
 if 'spotify_client' not in st.session_state:
     st.session_state.spotify_client = None
 
-def initialize_spotify(client_id: str, client_secret: str) -> Optional[spotipy.Spotify]:
+def search_youtube_videos(artist_name: str, track_name: str, youtube_api_key: str) -> Optional[str]:
+    """Recherche une vidéo YouTube pour un artiste et une chanson"""
+    try:
+        if not youtube_api_key:
+            return None
+            
+        # Nettoie le nom de la track pour la recherche
+        clean_track = re.sub(r'[^\w\s]', '', track_name)
+        clean_artist = re.sub(r'[^\w\s]', '', artist_name)
+        
+        # Requête de recherche YouTube
+        search_query = f"{clean_artist} {clean_track}"
+        youtube_search_url = "https://www.googleapis.com/youtube/v3/search"
+        
+        params = {
+            'part': 'snippet',
+            'q': search_query,
+            'type': 'video',
+            'maxResults': 1,
+            'key': youtube_api_key,
+            'order': 'relevance'
+        }
+        
+        response = requests.get(youtube_search_url, params=params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data['items']:
+                video_id = data['items'][0]['id']['videoId']
+                return f"https://www.youtube.com/watch?v={video_id}"
+        
+        return None
+    except Exception as e:
+        # Échec silencieux pour ne pas casser l'app
+        return None
+
+def get_youtube_embed_url(youtube_url: str) -> str:
+    """Convertit une URL YouTube en URL d'embed"""
+    if not youtube_url:
+        return ""
+    
+    # Extrait l'ID de la vidéo
+    video_id = None
+    if "watch?v=" in youtube_url:
+        video_id = youtube_url.split("watch?v=")[1].split("&")[0]
+    elif "youtu.be/" in youtube_url:
+        video_id = youtube_url.split("youtu.be/")[1].split("?")[0]
+    
+    if video_id:
+        return f"https://www.youtube.com/embed/{video_id}"
+    return ""
+
+def display_youtube_video(youtube_url: str, title: str = ""):
+    """Affiche une vidéo YouTube intégrée dans Streamlit"""
+    if youtube_url:
+        embed_url = get_youtube_embed_url(youtube_url)
+        if embed_url:
+            st.markdown(f"""
+            <div class="spotify-embed">
+                <iframe width="100%" height="200" src="{embed_url}" 
+                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen></iframe>
+            </div>
+            """, unsafe_allow_html=True)
     """Initialise le client Spotify"""
     try:
         client_credentials_manager = SpotifyClientCredentials(
@@ -301,24 +280,30 @@ def call_openai_for_recommendations(prompt: str, api_key: str) -> Optional[Dict]
         st.error(f"Erreur IA : {str(e)}")
         return None
 
-def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations: List[Dict]) -> List[Dict]:
-    """Vérifie que les artistes existent sur Spotify, enrichit les données et trie par date de sortie la plus récente."""
+def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations: List[Dict], youtube_api_key: str = "") -> List[Dict]:
+    """Vérifie que les artistes existent sur Spotify et enrichit les données"""
     enriched_recs = []
+    
     for rec in recommendations:
         try:
             # Recherche l'artiste sur Spotify
             results = spotify.search(q=rec['name'], type='artist', limit=1)
             if results['artists']['items']:
                 artist = results['artists']['items'][0]
+                
                 # Récupère les top tracks
                 top_tracks = spotify.artist_top_tracks(artist['id'], country='FR')
-                # Récupère les albums/singles pour trouver la date la plus récente
-                albums = spotify.artist_albums(artist['id'], album_type='album,single', limit=10)
-                latest_date = None
-                for album in albums['items']:
-                    date = album['release_date']
-                    if not latest_date or date > latest_date:
-                        latest_date = date
+                
+                # Recherche YouTube pour le top track (si API disponible)
+                youtube_url = None
+                if youtube_api_key and top_tracks['tracks']:
+                    top_track = top_tracks['tracks'][0]
+                    youtube_url = search_youtube_videos(
+                        artist['name'], 
+                        top_track['name'], 
+                        youtube_api_key
+                    )
+                
                 enriched_rec = {
                     'name': artist['name'],
                     'reason': rec['reason'],
@@ -331,61 +316,16 @@ def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations:
                         'popularity': artist['popularity'],
                         'followers': artist['followers']['total'],
                         'top_tracks': top_tracks['tracks'][:3],
-                        'external_urls': artist['external_urls'],
-                        'latest_release_date': latest_date
+                        'external_urls': artist['external_urls']
                     }
                 }
                 enriched_recs.append(enriched_rec)
+                
         except Exception as e:
             st.warning(f"Artiste '{rec['name']}' non trouvé sur Spotify")
             continue
-    # Trie par date de sortie la plus récente (ordre décroissant)
-    enriched_recs.sort(key=lambda x: x['spotify_data']['latest_release_date'] or '', reverse=True)
+    
     return enriched_recs
-
-# --- Fonction utilitaire pour formater la date au format français ---
-def format_date_fr(date_str: str) -> str:
-    if not date_str:
-        return "N/A"
-    parts = date_str.split('-')
-    if len(parts) == 3:
-        # Format AAAA-MM-JJ
-        return f"{parts[2]}/{parts[1]}/{parts[0]}"
-    elif len(parts) == 2:
-        # Format AAAA-MM
-        return f"{parts[1]}/{parts[0]}"
-    elif len(parts) == 1:
-        # Format AAAA
-        return parts[0]
-    return date_str
-
-# Ajout du toggle dark mode
-if 'dark_mode' not in st.session_state:
-    st.session_state.dark_mode = False
-
-def toggle_dark_mode():
-    st.session_state.dark_mode = not st.session_state.dark_mode
-    # Suppression de st.experimental_rerun() pour éviter l'erreur
-
-with st.sidebar:
-    st.markdown("---")
-    dark_label = "🌙 Mode sombre activé" if st.session_state.dark_mode else "☀️ Mode clair activé"
-    if st.button(dark_label, key="dark_mode_btn"):
-        toggle_dark_mode()
-
-# Applique la classe dark-mode si activé
-if st.session_state.dark_mode:
-    st.markdown("""
-    <script>
-    document.body.classList.add('dark-mode');
-    </script>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <script>
-    document.body.classList.remove('dark-mode');
-    </script>
-    """, unsafe_allow_html=True)
 
 # Sidebar pour la configuration
 with st.sidebar:
@@ -395,12 +335,14 @@ with st.sidebar:
     default_openai = ""
     default_spotify_id = ""
     default_spotify_secret = ""
+    default_youtube_key = ""
     secrets_loaded = False
     
     try:
         default_openai = st.secrets["OPENAI_API_KEY"]
         default_spotify_id = st.secrets["SPOTIFY_CLIENT_ID"]
         default_spotify_secret = st.secrets["SPOTIFY_CLIENT_SECRET"]
+        default_youtube_key = st.secrets.get("YOUTUBE_API_KEY", "")
         secrets_loaded = True
         
         st.success("🔒 Clés par défaut chargées")
@@ -434,6 +376,14 @@ with st.sidebar:
         help="Depuis votre compte Spotify Developer"
     )
     
+    youtube_api_key = st.text_input(
+        "YouTube API Key (optionnel)",
+        value=default_youtube_key,
+        type="password",
+        placeholder="Pour intégrer les vidéos YouTube",
+        help="API YouTube Data v3 - Optionnel mais recommandé pour une expérience complète"
+    )
+    
     # Test de connexion Spotify
     if spotify_client_id and spotify_client_secret:
         if st.button("🔗 Tester la connexion Spotify"):
@@ -455,7 +405,20 @@ with st.sidebar:
     4. **Découvrez** de nouveaux artistes !
     
     💡 **Astuce :** Plus l'artiste est connu, meilleures seront les recommandations !
+    
+    🎥 **YouTube :** Ajoutez votre clé YouTube API pour voir les vidéos des artistes recommandés !
     """)
+
+# Zone pour les comptes nécessaires
+    st.markdown("""
+    <div class="analysis-card">
+        <h3>🔑 Comptes requis</h3>
+        <p><strong>OpenAI API :</strong> <a href="https://platform.openai.com" target="_blank">platform.openai.com</a></p>
+        <p><strong>Spotify Developer :</strong> <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a></p>
+        <p><strong>YouTube Data API :</strong> <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> (optionnel)</p>
+        <p><em>Vos clés restent privées et ne sont utilisées que pour les APIs officielles</em></p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Zone principale
 if not st.session_state.spotify_client or not openai_api_key:
@@ -486,16 +449,17 @@ if not st.session_state.spotify_client or not openai_api_key:
                 <li>📊 <strong>Analyse des genres</strong> et influences</li>
                 <li>🎼 <strong>Top tracks</strong> de chaque recommandation</li>
                 <li>🔗 <strong>Liens Spotify</strong> directs</li>
+                <li>🎥 <strong>Vidéos YouTube</strong> intégrées (optionnel)</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
-    
     # Zone pour les comptes nécessaires
     st.markdown("""
     <div class="analysis-card">
-        <h3>🔑 Comptes requis (gratuits)</h3>
+        <h3>🔑 Comptes requis</h3>
         <p><strong>OpenAI API :</strong> <a href="https://platform.openai.com" target="_blank">platform.openai.com</a></p>
         <p><strong>Spotify Developer :</strong> <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a></p>
+        <p><strong>YouTube Data API :</strong> <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> (optionnel)</p>
         <p><em>Vos clés restent privées et ne sont utilisées que pour les APIs officielles</em></p>
     </div>
     """, unsafe_allow_html=True)
@@ -540,7 +504,8 @@ else:
                             with st.spinner("🎵 Vérification des artistes sur Spotify..."):
                                 enriched_recs = verify_and_enrich_recommendations(
                                     st.session_state.spotify_client, 
-                                    ia_response['recommendations']
+                                    ia_response['recommendations'],
+                                    youtube_api_key  # Ajout de la clé YouTube
                                 )
                                 
                                 st.session_state.recommendations = {
@@ -591,19 +556,25 @@ else:
                 with col1:
                     if rec['spotify_data']['image']:
                         st.image(rec['spotify_data']['image'], width=150)
+                    
+                    # Affichage de la vidéo YouTube si disponible
+                    if rec['spotify_data'].get('youtube_url'):
+                        st.markdown("**🎥 Vidéo YouTube :**")
+                        display_youtube_video(
+                            rec['spotify_data']['youtube_url'], 
+                            f"{rec['name']} - {rec['spotify_data']['top_tracks'][0]['name'] if rec['spotify_data']['top_tracks'] else 'Top Track'}"
+                        )
+                    elif youtube_api_key:
+                        st.info("🎥 Vidéo YouTube non trouvée pour cet artiste")
                 
                 with col2:
                     st.markdown(f"""
                     <div class="recommendation-card">
                         <h4>{rec['name']}</h4>
                         <p><strong>Pourquoi cette recommandation :</strong> {rec['reason']}</p>
-                        <div style="margin-bottom:0.5em;">
-                          {''.join([f'<span class=\'badge badge-genre\'>{genre}</span>' for genre in rec['spotify_data']['genres'][:3]]) or '<span class=\'badge badge-genre\'>Varié</span>'}
-                          <span class='badge badge-similar'>{rec['similarity_type'].replace('même genre','Similaire').replace('influence historique','Influence').replace('approche créative','Créatif').replace('découverte surprenante','Surprise')}</span>
-                          <span class='badge' style='background:#fff;color:#191414;'>Popularité: {rec['spotify_data']['popularity']}/100</span>
-                          <span class='badge' style='background:#191414;color:#fff;'>Confiance IA: {rec['confidence']}%</span>
-                          <span class='badge' style='background:#00bcd4;color:#fff;'>Dernière sortie: {format_date_fr(rec['spotify_data']['latest_release_date'])}</span>
-                        </div>
+                        <p><strong>Genres :</strong> {', '.join(rec['spotify_data']['genres'][:3]) or 'Varié'}</p>
+                        <p><strong>Popularité :</strong> {rec['spotify_data']['popularity']}/100</p>
+                        <p><strong>Confiance IA :</strong> {rec['confidence']}%</p>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -634,17 +605,12 @@ else:
             st.session_state.recommendations = []
             st.rerun()
 
-# Footer enrichi
+# Footer
+st.markdown("---")
 st.markdown("""
----
 <div style='text-align: center; color: #666; padding: 2rem;'>
     <p>🎵 <strong>Music Discovery AI</strong> - Propulsé par Spotify API & OpenAI</p>
     <p>🚀 Déployez gratuitement sur <strong>Streamlit Cloud</strong></p>
     <p>💡 Vos données restent privées - APIs officielles uniquement</p>
-    <p style='margin-top:1em;'>
-        <a href='https://github.com/jessicakuijer/music-discovery-ai' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg' width='28' style='vertical-align:middle;'/></a>
-        <a href='https://www.linkedin.com/in/jessicakuijer/' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg' width='28' style='vertical-align:middle;'/></a>
-    </p>
-    <p style='font-size:0.9em;color:#aaa;'>Design IA & UI par <strong>Music Discovery AI</strong></p>
 </div>
 """, unsafe_allow_html=True)
