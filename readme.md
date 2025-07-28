@@ -9,6 +9,7 @@ Application Streamlit qui utilise l'IA pour découvrir de nouveaux artistes bas�
 - 📊 **Données Spotify** complètes (genres, popularité, top tracks)
 - 🎧 **Liens directs** vers Spotify pour écouter
 - 🎨 **Interface moderne** et intuitive
+- 🎥 **Vidéos YouTube intégrées** pour chaque artiste recommandé (clé API YouTube requise)
 
 ## 🚀 Déploiement Express
 
@@ -35,6 +36,22 @@ Application Streamlit qui utilise l'IA pour découvrir de nouveaux artistes bas�
    - Allez sur [platform.openai.com](https://platform.openai.com)
    - Section "API Keys" → "Create new secret key"
    - **⚠️ Copiez immédiatement la clé !**
+
+### 2bis. (Optionnel) Configuration YouTube Data API
+
+1. **Créer un projet Google Cloud** :
+   - Allez sur [console.cloud.google.com](https://console.cloud.google.com)
+   - Créez un projet ou sélectionnez-en un existant
+2. **Activer l'API YouTube Data v3** :
+   - Menu "API & Services" > "Bibliothèque"
+   - Recherchez "YouTube Data API v3" et activez-la
+3. **Créer une clé API** :
+   - Menu "Identifiants" > "Créer des identifiants" > "Clé API"
+   - Copiez la clé générée
+4. **Utilisation** :
+   - Entrez la clé dans la sidebar de l'application (champ "YouTube API Key")
+
+**Remarque :** L'intégration YouTube est optionnelle mais permet d'afficher automatiquement une vidéo pour chaque artiste recommandé !
 
 ### 3. Structure du Projet
 
@@ -93,6 +110,7 @@ music-discovery-ai/
 - 📊 Données Spotify (genres, popularité)
 - 🔗 Liens directs vers Spotify
 - 💡 Justification IA de la recommandation
+- 🎥 Vidéo YouTube intégrée (si clé API fournie)
 
 ## 🔧 Développement Local
 
@@ -137,6 +155,7 @@ L'IA utilise cette logique pour 8 recommandations :
 - **Spotify Web API** : Données musicales
 - **OpenAI GPT-4o-mini** : Analyse et recommandations
 - **Streamlit** : Interface utilisateur
+- **YouTube Data API v3** : Recherche et intégration de vidéos musicales
 
 ## 🎤 Crédit
 
