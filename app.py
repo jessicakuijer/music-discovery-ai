@@ -347,7 +347,8 @@ def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations:
                         'popularity': artist['popularity'],
                         'followers': artist['followers']['total'],
                         'top_tracks': top_tracks['tracks'][:3],
-                        'external_urls': artist['external_urls']
+                        'external_urls': artist['external_urls'],
+                        'youtube_url': youtube_url  # Ajout de l'URL YouTube
                     }
                 }
                 enriched_recs.append(enriched_rec)
