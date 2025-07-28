@@ -290,19 +290,23 @@ def call_openai_for_recommendations(prompt: str, api_key: str) -> Optional[Dict]
         return None
 
 def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations: List[Dict]) -> List[Dict]:
-    """Vérifie que les artistes existent sur Spotify et enrichit les données"""
+    """Vérifie que les artistes existent sur Spotify, enrichit les données et trie par date de sortie la plus récente."""
     enriched_recs = []
-    
     for rec in recommendations:
         try:
             # Recherche l'artiste sur Spotify
             results = spotify.search(q=rec['name'], type='artist', limit=1)
             if results['artists']['items']:
                 artist = results['artists']['items'][0]
-                
                 # Récupère les top tracks
                 top_tracks = spotify.artist_top_tracks(artist['id'], country='FR')
-                
+                # Récupère les albums/singles pour trouver la date la plus récente
+                albums = spotify.artist_albums(artist['id'], album_type='album,single', limit=10)
+                latest_date = None
+                for album in albums['items']:
+                    date = album['release_date']
+                    if not latest_date or date > latest_date:
+                        latest_date = date
                 enriched_rec = {
                     'name': artist['name'],
                     'reason': rec['reason'],
@@ -315,15 +319,16 @@ def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations:
                         'popularity': artist['popularity'],
                         'followers': artist['followers']['total'],
                         'top_tracks': top_tracks['tracks'][:3],
-                        'external_urls': artist['external_urls']
+                        'external_urls': artist['external_urls'],
+                        'latest_release_date': latest_date
                     }
                 }
                 enriched_recs.append(enriched_rec)
-                
         except Exception as e:
             st.warning(f"Artiste '{rec['name']}' non trouvé sur Spotify")
             continue
-    
+    # Trie par date de sortie la plus récente (ordre décroissant)
+    enriched_recs.sort(key=lambda x: x['spotify_data']['latest_release_date'] or '', reverse=True)
     return enriched_recs
 
 # Ajout du toggle dark mode
@@ -569,6 +574,7 @@ else:
                           <span class='badge badge-similar'>{rec['similarity_type'].replace('même genre','Similaire').replace('influence historique','Influence').replace('approche créative','Créatif').replace('découverte surprenante','Surprise')}</span>
                           <span class='badge' style='background:#fff;color:#191414;'>Popularité: {rec['spotify_data']['popularity']}/100</span>
                           <span class='badge' style='background:#191414;color:#fff;'>Confiance IA: {rec['confidence']}%</span>
+                          <span class='badge' style='background:#00bcd4;color:#fff;'>Dernière sortie: {rec['spotify_data']['latest_release_date'] or 'N/A'}</span>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
