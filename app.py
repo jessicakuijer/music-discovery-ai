@@ -130,13 +130,21 @@ def get_artist_data(spotify: spotipy.Spotify, artist_name: str) -> Optional[Dict
         artist_info = spotify.artist(artist_id)
         top_tracks = spotify.artist_top_tracks(artist_id, country='FR')
         albums = spotify.artist_albums(artist_id, album_type='album', limit=5)
-        related_artists = spotify.artist_related_artists(artist_id)
+        
+        # Related artists avec fallback (parfois indisponible selon l'artiste)
+        try:
+            related_artists = spotify.artist_related_artists(artist_id)
+            related = related_artists['artists'][:10]
+        except Exception:
+            # Certains artistes n'ont pas de related_artists disponibles
+            related = []
+            st.info("ℹ️ Artistes similaires indisponibles pour cet artiste, mais l'IA va quand même faire ses recommandations !")
         
         return {
             'info': artist_info,
             'top_tracks': top_tracks['tracks'],
             'albums': albums['items'],
-            'related_artists': related_artists['artists'][:10],
+            'related_artists': related,
             'genres': artist_info['genres'],
             'popularity': artist_info['popularity'],
             'followers': artist_info['followers']['total']
