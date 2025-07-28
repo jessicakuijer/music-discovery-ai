@@ -101,6 +101,21 @@ if 'recommendations' not in st.session_state:
 if 'spotify_client' not in st.session_state:
     st.session_state.spotify_client = None
 
+def initialize_spotify(client_id: str, client_secret: str) -> Optional[spotipy.Spotify]:
+    """Initialise le client Spotify"""
+    try:
+        client_credentials_manager = SpotifyClientCredentials(
+            client_id=client_id,
+            client_secret=client_secret
+        )
+        spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        # Test de connexion
+        spotify.search(q="test", type="artist", limit=1)
+        return spotify
+    except Exception as e:
+        st.error(f"Erreur de connexion Spotify : {str(e)}")
+        return None
+
 def search_youtube_videos(artist_name: str, track_name: str, youtube_api_key: str) -> Optional[str]:
     """Recherche une vidéo YouTube pour un artiste et une chanson"""
     try:
