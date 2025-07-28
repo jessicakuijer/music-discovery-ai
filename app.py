@@ -331,6 +331,22 @@ def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations:
     enriched_recs.sort(key=lambda x: x['spotify_data']['latest_release_date'] or '', reverse=True)
     return enriched_recs
 
+# --- Fonction utilitaire pour formater la date au format français ---
+def format_date_fr(date_str: str) -> str:
+    if not date_str:
+        return "N/A"
+    parts = date_str.split('-')
+    if len(parts) == 3:
+        # Format AAAA-MM-JJ
+        return f"{parts[2]}/{parts[1]}/{parts[0]}"
+    elif len(parts) == 2:
+        # Format AAAA-MM
+        return f"{parts[1]}/{parts[0]}"
+    elif len(parts) == 1:
+        # Format AAAA
+        return parts[0]
+    return date_str
+
 # Ajout du toggle dark mode
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = False
@@ -574,7 +590,7 @@ else:
                           <span class='badge badge-similar'>{rec['similarity_type'].replace('même genre','Similaire').replace('influence historique','Influence').replace('approche créative','Créatif').replace('découverte surprenante','Surprise')}</span>
                           <span class='badge' style='background:#fff;color:#191414;'>Popularité: {rec['spotify_data']['popularity']}/100</span>
                           <span class='badge' style='background:#191414;color:#fff;'>Confiance IA: {rec['confidence']}%</span>
-                          <span class='badge' style='background:#00bcd4;color:#fff;'>Dernière sortie: {rec['spotify_data']['latest_release_date'] or 'N/A'}</span>
+                          <span class='badge' style='background:#00bcd4;color:#fff;'>Dernière sortie: {format_date_fr(rec['spotify_data']['latest_release_date'])}</span>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
