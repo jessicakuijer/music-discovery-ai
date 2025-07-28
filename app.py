@@ -353,12 +353,12 @@ if 'dark_mode' not in st.session_state:
 
 def toggle_dark_mode():
     st.session_state.dark_mode = not st.session_state.dark_mode
-    st.experimental_rerun()
+    # Suppression de st.experimental_rerun() pour éviter l'erreur
 
 with st.sidebar:
     st.markdown("---")
     dark_label = "🌙 Mode sombre activé" if st.session_state.dark_mode else "☀️ Mode clair activé"
-    if st.button(dark_label):
+    if st.button(dark_label, key="dark_mode_btn"):
         toggle_dark_mode()
 
 # Applique la classe dark-mode si activé
