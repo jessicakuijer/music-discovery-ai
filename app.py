@@ -129,9 +129,12 @@ st.markdown("""
     .badge-influence { background: #ffb300; color: #191414; }
     .badge-creative { background: #00bcd4; color: #fff; }
     .badge-surprise { background: #e91e63; color: #fff; }
-    /* Dark mode toggle */
-    .dark-mode {
+    /* Dark mode amélioré */
+    .dark-mode, .dark-mode .stApp, .dark-mode [data-testid="stAppViewContainer"] {
         background: #191414 !important;
+        color: #e8f5e8 !important;
+    }
+    .dark-mode .stApp * {
         color: #e8f5e8 !important;
     }
     .dark-mode .main-header {
@@ -151,6 +154,15 @@ st.markdown("""
     .dark-mode .badge-influence { background: #ffb300; color: #191414; }
     .dark-mode .badge-creative { background: #00bcd4; color: #fff; }
     .dark-mode .badge-surprise { background: #e91e63; color: #fff; }
+    .dark-mode input, .dark-mode textarea, .dark-mode select {
+        background: #232526 !important;
+        color: #e8f5e8 !important;
+        border: 1px solid #444 !important;
+    }
+    .dark-mode .stButton > button {
+        background: linear-gradient(135deg, #232526 0%, #1db954 100%) !important;
+        color: #e8f5e8 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
