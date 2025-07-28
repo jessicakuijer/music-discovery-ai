@@ -608,8 +608,8 @@ st.markdown("""
     <p>🚀 Déployez gratuitement sur <strong>Streamlit Cloud</strong></p>
     <p>💡 Vos données restent privées - APIs officielles uniquement</p>
     <p style='margin-top:1em;'>
-        <a href='https://github.com/tonrepo' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg' width='28' style='vertical-align:middle;'/></a>
-        <a href='https://www.linkedin.com/' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg' width='28' style='vertical-align:middle;'/></a>
+        <a href='https://github.com/jessicakuijer/music-discovery-ai' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg' width='28' style='vertical-align:middle;'/></a>
+        <a href='https://www.linkedin.com/in/jessicakuijer/' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg' width='28' style='vertical-align:middle;'/></a>
     </p>
     <p style='font-size:0.9em;color:#aaa;'>Design IA & UI par <strong>Music Discovery AI</strong></p>
 </div>
