@@ -19,6 +19,10 @@ st.set_page_config(
 # CSS personnalisé
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    html, body, .main-header, .artist-card, .recommendation-card, .analysis-card, .track-card {
+        font-family: 'Montserrat', sans-serif !important;
+    }
     .main-header {
         background: linear-gradient(135deg, #1db954 0%, #191414 100%);
         padding: 2rem;
@@ -26,42 +30,58 @@ st.markdown("""
         color: white;
         text-align: center;
         margin-bottom: 2rem;
+        box-shadow: 0 4px 24px rgba(29,185,84,0.10);
     }
-    
     .artist-card {
         background: #f8f9ff;
         padding: 1.5rem;
         border-radius: 15px;
         border-left: 4px solid #1db954;
         margin: 1rem 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: box-shadow 0.3s, transform 0.3s;
     }
-    
+    .artist-card:hover {
+        box-shadow: 0 8px 24px rgba(29,185,84,0.15);
+        transform: translateY(-4px) scale(1.02);
+    }
     .recommendation-card {
         background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
         color: white;
         padding: 1.5rem;
         border-radius: 15px;
         margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3);
+        box-shadow: 0 4px 15px rgba(29, 185, 84, 0.18);
+        transition: box-shadow 0.3s, transform 0.3s;
     }
-    
+    .recommendation-card:hover {
+        box-shadow: 0 8px 24px rgba(29,185,84,0.22);
+        transform: translateY(-4px) scale(1.02);
+    }
     .track-card {
         background: #f0f0f0;
         padding: 1rem;
         border-radius: 10px;
         margin: 0.5rem 0;
         border-left: 3px solid #1db954;
+        transition: box-shadow 0.3s, transform 0.3s;
     }
-    
+    .track-card:hover {
+        box-shadow: 0 4px 12px rgba(29,185,84,0.10);
+        transform: scale(1.01);
+    }
     .analysis-card {
         background: #e8f5e8;
         padding: 1.5rem;
         border-radius: 15px;
         border-left: 4px solid #28a745;
         margin: 1rem 0;
+        transition: box-shadow 0.3s, transform 0.3s;
     }
-    
+    .analysis-card:hover {
+        box-shadow: 0 8px 24px rgba(40,167,69,0.13);
+        transform: translateY(-2px) scale(1.01);
+    }
     .stButton > button {
         width: 100%;
         background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
@@ -71,13 +91,66 @@ st.markdown("""
         border-radius: 10px;
         font-weight: 600;
         font-size: 1rem;
+        transition: background 0.3s, box-shadow 0.3s;
     }
-    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #1ed760 0%, #1db954 100%);
+        box-shadow: 0 2px 8px rgba(29,185,84,0.18);
+    }
     .spotify-embed {
         border-radius: 12px;
         overflow: hidden;
         margin: 1rem 0;
     }
+    /* Responsive */
+    @media (max-width: 600px) {
+        .main-header, .artist-card, .recommendation-card, .analysis-card {
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+        .stButton > button {
+            font-size: 0.95rem;
+        }
+    }
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 0.25em 0.7em;
+        font-size: 0.85em;
+        font-weight: 600;
+        border-radius: 8px;
+        margin-right: 0.5em;
+        background: #1db954;
+        color: #fff;
+        vertical-align: middle;
+    }
+    .badge-genre { background: #191414; color: #fff; }
+    .badge-similar { background: #1db954; color: #fff; }
+    .badge-influence { background: #ffb300; color: #191414; }
+    .badge-creative { background: #00bcd4; color: #fff; }
+    .badge-surprise { background: #e91e63; color: #fff; }
+    /* Dark mode toggle */
+    .dark-mode {
+        background: #191414 !important;
+        color: #e8f5e8 !important;
+    }
+    .dark-mode .main-header {
+        background: linear-gradient(135deg, #232526 0%, #191414 100%);
+        color: #fff;
+    }
+    .dark-mode .artist-card, .dark-mode .recommendation-card, .dark-mode .analysis-card, .dark-mode .track-card {
+        background: #232526 !important;
+        color: #e8f5e8 !important;
+        border-left-color: #1db954 !important;
+    }
+    .dark-mode .recommendation-card {
+        background: linear-gradient(135deg, #232526 0%, #1db954 100%) !important;
+    }
+    .dark-mode .badge-genre { background: #fff; color: #191414; }
+    .dark-mode .badge-similar { background: #1db954; color: #fff; }
+    .dark-mode .badge-influence { background: #ffb300; color: #191414; }
+    .dark-mode .badge-creative { background: #00bcd4; color: #fff; }
+    .dark-mode .badge-surprise { background: #e91e63; color: #fff; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -252,6 +325,34 @@ def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations:
             continue
     
     return enriched_recs
+
+# Ajout du toggle dark mode
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = False
+
+def toggle_dark_mode():
+    st.session_state.dark_mode = not st.session_state.dark_mode
+    st.experimental_rerun()
+
+with st.sidebar:
+    st.markdown("---")
+    dark_label = "🌙 Mode sombre activé" if st.session_state.dark_mode else "☀️ Mode clair activé"
+    if st.button(dark_label):
+        toggle_dark_mode()
+
+# Applique la classe dark-mode si activé
+if st.session_state.dark_mode:
+    st.markdown("""
+    <script>
+    document.body.classList.add('dark-mode');
+    </script>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <script>
+    document.body.classList.remove('dark-mode');
+    </script>
+    """, unsafe_allow_html=True)
 
 # Sidebar pour la configuration
 with st.sidebar:
@@ -463,9 +564,12 @@ else:
                     <div class="recommendation-card">
                         <h4>{rec['name']}</h4>
                         <p><strong>Pourquoi cette recommandation :</strong> {rec['reason']}</p>
-                        <p><strong>Genres :</strong> {', '.join(rec['spotify_data']['genres'][:3]) or 'Varié'}</p>
-                        <p><strong>Popularité :</strong> {rec['spotify_data']['popularity']}/100</p>
-                        <p><strong>Confiance IA :</strong> {rec['confidence']}%</p>
+                        <div style="margin-bottom:0.5em;">
+                          {''.join([f'<span class=\'badge badge-genre\'>{genre}</span>' for genre in rec['spotify_data']['genres'][:3]]) or '<span class=\'badge badge-genre\'>Varié</span>'}
+                          <span class='badge badge-similar'>{rec['similarity_type'].replace('même genre','Similaire').replace('influence historique','Influence').replace('approche créative','Créatif').replace('découverte surprenante','Surprise')}</span>
+                          <span class='badge' style='background:#fff;color:#191414;'>Popularité: {rec['spotify_data']['popularity']}/100</span>
+                          <span class='badge' style='background:#191414;color:#fff;'>Confiance IA: {rec['confidence']}%</span>
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -496,12 +600,17 @@ else:
             st.session_state.recommendations = []
             st.rerun()
 
-# Footer
-st.markdown("---")
+# Footer enrichi
 st.markdown("""
+---
 <div style='text-align: center; color: #666; padding: 2rem;'>
     <p>🎵 <strong>Music Discovery AI</strong> - Propulsé par Spotify API & OpenAI</p>
     <p>🚀 Déployez gratuitement sur <strong>Streamlit Cloud</strong></p>
     <p>💡 Vos données restent privées - APIs officielles uniquement</p>
+    <p style='margin-top:1em;'>
+        <a href='https://github.com/tonrepo' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg' width='28' style='vertical-align:middle;'/></a>
+        <a href='https://www.linkedin.com/' target='_blank' style='margin:0 0.5em;'><img src='https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg' width='28' style='vertical-align:middle;'/></a>
+    </p>
+    <p style='font-size:0.9em;color:#aaa;'>Design IA & UI par <strong>Music Discovery AI</strong></p>
 </div>
 """, unsafe_allow_html=True)
