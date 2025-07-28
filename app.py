@@ -116,7 +116,7 @@ def initialize_spotify(client_id: str, client_secret: str) -> Optional[spotipy.S
         return None
 
 def get_artist_data(spotify: spotipy.Spotify, artist_name: str) -> Optional[Dict]:
-    """Récupère les données d'un artiste depuis Spotify"""
+    """Version sans related_artists pour Development mode"""
     try:
         # Recherche de l'artiste
         results = spotify.search(q=artist_name, type='artist', limit=1)
@@ -126,17 +126,25 @@ def get_artist_data(spotify: spotipy.Spotify, artist_name: str) -> Optional[Dict
         artist = results['artists']['items'][0]
         artist_id = artist['id']
         
-        # Récupération des données détaillées
+        # Récupération des données de base
         artist_info = spotify.artist(artist_id)
         top_tracks = spotify.artist_top_tracks(artist_id, country='FR')
         albums = spotify.artist_albums(artist_id, album_type='album', limit=5)
-        related_artists = spotify.artist_related_artists(artist_id)
+        
+        # SKIP related_artists en mode Development
+        try:
+            related_artists = spotify.artist_related_artists(artist_id)
+            related = related_artists['artists'][:10]
+        except:
+            # Fallback sans related artists
+            related = []
+            st.warning("⚠️ Mode Development: Related artists indisponibles")
         
         return {
             'info': artist_info,
             'top_tracks': top_tracks['tracks'],
             'albums': albums['items'],
-            'related_artists': related_artists['artists'][:10],
+            'related_artists': related,  # Peut être vide
             'genres': artist_info['genres'],
             'popularity': artist_info['popularity'],
             'followers': artist_info['followers']['total']
