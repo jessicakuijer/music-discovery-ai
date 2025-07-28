@@ -196,19 +196,6 @@ def display_youtube_video(youtube_url: str, title: str = ""):
                 allowfullscreen></iframe>
             </div>
             """, unsafe_allow_html=True)
-    """Initialise le client Spotify"""
-    try:
-        client_credentials_manager = SpotifyClientCredentials(
-            client_id=client_id,
-            client_secret=client_secret
-        )
-        spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-        # Test de connexion
-        spotify.search(q="test", type="artist", limit=1)
-        return spotify
-    except Exception as e:
-        st.error(f"Erreur de connexion Spotify : {str(e)}")
-        return None
 
 def get_artist_data(spotify: spotipy.Spotify, artist_name: str) -> Optional[Dict]:
     """Récupère les données d'un artiste depuis Spotify"""
