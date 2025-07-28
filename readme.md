@@ -1,166 +1,72 @@
 # 🎵 Music Discovery AI
 
-Application Streamlit qui utilise l'IA pour découvrir de nouveaux artistes basés sur vos goûts musicaux.
+**Music Discovery AI** est une application qui utilise l'intelligence artificielle et les données Spotify pour vous faire découvrir de nouveaux artistes selon vos goûts musicaux. Elle enrichit chaque recommandation avec des données Spotify et, si vous fournissez une clé API YouTube, intègre automatiquement une vidéo musicale pour chaque artiste suggéré.
 
-## 🎯 Fonctionnalités
+## ✨ Fonctionnalités principales
 
-- 🤖 **Analyse IA** du style musical d'un artiste
-- 🎵 **8 recommandations personnalisées** par recherche
-- 📊 **Données Spotify** complètes (genres, popularité, top tracks)
-- 🎧 **Liens directs** vers Spotify pour écouter
-- 🎨 **Interface moderne** et intuitive
-- 🎥 **Vidéos YouTube intégrées** pour chaque artiste recommandé (clé API YouTube requise)
+- 🤖 Analyse IA du style musical d'un artiste de votre choix
+- 🎯 8 recommandations personnalisées, classées par type de similarité (genre, époque, créativité, surprise)
+- 📊 Données enrichies : genres, popularité, followers, top tracks Spotify
+- 🎧 Liens directs pour écouter sur Spotify
+- 🎥 Vidéo YouTube intégrée pour chaque artiste recommandé (si clé API fournie)
+- 💡 Justification IA pour chaque recommandation
 
-## 🚀 Déploiement Express
+## 🔍 Comment ça marche ?
 
-### 1. Configuration Spotify Developer
+1. **Vous saisissez le nom d'un artiste que vous aimez**
+2. L'application récupère ses données Spotify (genres, popularité, top morceaux, artistes similaires)
+3. L'IA (OpenAI) analyse le style de l'artiste et génère 8 recommandations selon une logique précise :
+   - 3 artistes du même genre mais moins mainstream
+   - 2 artistes d'une époque différente avec des influences similaires
+   - 2 artistes à l'approche créative proche
+   - 1 découverte surprenante mais cohérente
+4. Pour chaque artiste recommandé :
+   - Vérification de l'existence sur Spotify
+   - Récupération des données principales (image, genres, top tracks, popularité)
+   - Recherche d'une vidéo YouTube (si clé API fournie)
+5. **Vous découvrez les artistes, écoutez leurs morceaux, et visionnez une vidéo directement dans l'interface**
 
-1. **Créer une app Spotify** :
-   - Allez sur [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
-   - Cliquez "Create app"
-   - Nom : `Music Discovery AI`
-   - Description : `AI-powered music discovery app`
-   - Website : https://votre-app.streamlit.app
-   - Redirect URIs : AJOUTEZ CES 2 LIGNES :
-     - https://votre-app.streamlit.app/callback
-   - API utilisée : `Web API`
+## 🖥️ Exemple d'utilisation
 
-2. **Récupérer les clés** :
-   - `Client ID` : Visible sur le dashboard
-   - `Client Secret` : Cliquez "Show client secret"
-   - **⚠️ Gardez ces clés privées !**
-
-### 2. Configuration OpenAI
-
-1. **Créer une clé API** :
-   - Allez sur [platform.openai.com](https://platform.openai.com)
-   - Section "API Keys" → "Create new secret key"
-   - **⚠️ Copiez immédiatement la clé !**
-
-### 2bis. (Optionnel) Configuration YouTube Data API
-
-1. **Créer un projet Google Cloud** :
-   - Allez sur [console.cloud.google.com](https://console.cloud.google.com)
-   - Créez un projet ou sélectionnez-en un existant
-2. **Activer l'API YouTube Data v3** :
-   - Menu "API & Services" > "Bibliothèque"
-   - Recherchez "YouTube Data API v3" et activez-la
-3. **Créer une clé API** :
-   - Menu "Identifiants" > "Créer des identifiants" > "Clé API"
-   - Copiez la clé générée
-4. **Utilisation** :
-   - Entrez la clé dans la sidebar de l'application (champ "YouTube API Key")
-
-**Remarque :** L'intégration YouTube est optionnelle mais permet d'afficher automatiquement une vidéo pour chaque artiste recommandé !
-
-### 3. Structure du Projet
-
-```
-music-discovery-ai/
-├── app.py                 # Application Streamlit principale
-├── requirements.txt       # Dépendances Python
-└── README.md             # Ce fichier
-```
-
-### 4. Déploiement sur Streamlit Cloud
-
-1. **GitHub** :
-   - Créez un repository public
-   - Uploadez les 3 fichiers
-
-2. **Streamlit Cloud** :
-   - [share.streamlit.io](https://share.streamlit.io)
-   - "New app" → Sélectionnez votre repo
-   - Fichier principal : `app.py`
-   - Deploy !
-
-3. **Configuration des utilisateurs** :
-   - Les utilisateurs entreront leurs propres clés API
-   - Aucune configuration serveur nécessaire
-
-## 💡 Utilisation
-
-### Pour les utilisateurs finaux
-
-1. **APIs requises** (gratuites) :
-   - Clé OpenAI : [platform.openai.com](https://platform.openai.com)
-   - Spotify Developer : [developer.spotify.com](https://developer.spotify.com)
-
-2. **Workflow** :
-   - Entrer les clés API dans la sidebar
-   - Tester la connexion Spotify
-   - Rechercher un artiste aimé
-   - Découvrir 8 nouveaux artistes !
-
-## 🎨 Exemple d'Usage
-
-**Input :** "Radiohead"
-
-**Sortie IA :**
-- **Analyse** : "Style post-rock expérimental avec influences électroniques"
-- **8 Recommandations** :
-  - Thom Yorke (même univers)
-  - Portishead (trip-hop atmosphérique)  
+- **Input** : "Radiohead"
+- **Analyse IA** : "Style post-rock expérimental avec influences électroniques."
+- **Recommandations** :
+  - Portishead (trip-hop atmosphérique)
   - Sigur Rós (post-rock épique)
   - Massive Attack (textures sonores)
-  - etc...
+  - ...
+- **Pour chaque artiste** :
+  - Top 3 morceaux à écouter
+  - Genres, popularité, followers
+  - Lien Spotify
+  - Vidéo YouTube intégrée
+  - Justification IA de la recommandation
 
-**Pour chaque artiste :**
-- 🎧 Top 3 tracks à écouter
-- 📊 Données Spotify (genres, popularité)
-- 🔗 Liens directs vers Spotify
-- 💡 Justification IA de la recommandation
-- 🎥 Vidéo YouTube intégrée (si clé API fournie)
+## ⚙️ Prérequis & configuration
 
-## 🔧 Développement Local
+- **Clé API OpenAI** (obligatoire) : pour l'analyse et la génération des recommandations
+- **Clés Spotify Developer** (obligatoire) : pour accéder aux données musicales
+- **Clé API YouTube Data v3** (optionnelle) : pour intégrer automatiquement une vidéo musicale par artiste recommandé
 
-```bash
-# Installation
-pip install -r requirements.txt
+Les clés sont à renseigner dans l'interface de l'application. Aucune donnée n'est stockée côté serveur.
 
-# Variables d'environnement (optionnel)
-export SPOTIPY_CLIENT_ID="votre_client_id"
-export SPOTIPY_CLIENT_SECRET="votre_client_secret"
+## 🔒 Confidentialité
 
-# Lancement
-streamlit run app.py
-```
+- Les clés API restent locales à votre session
+- Aucune donnée utilisateur n'est collectée ou stockée
+- L'application communique uniquement avec les APIs officielles (Spotify, OpenAI, YouTube)
 
-## 🎯 Algorithme de Recommandation
+## 🛠️ Dépendances principales
 
-L'IA utilise cette logique pour 8 recommandations :
+- [spotipy](https://spotipy.readthedocs.io/) (API Spotify)
+- [openai](https://platform.openai.com/docs/api-reference)
+- [requests](https://docs.python-requests.org/)
+- [streamlit](https://streamlit.io/)
 
-- **3 artistes** : Même genre, moins mainstream
-- **2 artistes** : Époque différente, influences similaires
-- **2 artistes** : Approche créative proche
-- **1 artiste** : Découverte surprenante mais cohérente
+## 🙏 Crédits
 
-## 🔒 Sécurité
-
-- **Clés API** : Restent côté client uniquement
-- **Données** : Aucun stockage serveur
-- **APIs** : Communication directe Spotify/OpenAI
-- **Privacy** : Aucune donnée utilisateur collectée
-
-## 📈 Évolutions Possibles
-
-- 🎵 **Génération de playlists** Spotify automatique
-- 📱 **Mode découverte par humeur** 
-- 🎤 **Analyse de lyrics** avec l'IA
-- 📊 **Historique personnel** des découvertes
-- 🌍 **Découvertes géographiques** (artistes par pays)
-
-## 🎵 APIs Utilisées
-
-- **Spotify Web API** : Données musicales
-- **OpenAI GPT-4o-mini** : Analyse et recommandations
-- **Streamlit** : Interface utilisateur
-- **YouTube Data API v3** : Recherche et intégration de vidéos musicales
-
-## 🎤 Crédit
-
-Inspiré par l'amour de la découverte musicale et la puissance de l'IA pour personnaliser l'expérience d'écoute !
+Ce projet est inspiré par la passion de la découverte musicale et l'envie de proposer des recommandations vraiment personnalisées grâce à l'IA.
 
 ---
 
-🚀 **Ready to discover new music in 5 minutes!**
+*Explorez, écoutez, découvrez... et laissez l'IA élargir vos horizons musicaux !*
