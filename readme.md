@@ -51,9 +51,12 @@
 **Où renseigner les clés**
 
 1. **Fichier local (recommandé)** : copiez `.streamlit/secrets.toml.example` vers `.streamlit/secrets.toml`, ouvrez ce dernier et collez vos clés. Ce fichier est ignoré par Git : il ne part pas avec le dépôt.
-2. **Barre latérale** : vous pouvez aussi tout saisir à la main dans l’application (session locale, rien n’est enregistré sur un serveur).
+2. **Mode automatique (usage perso)** : si `secrets.toml` contient au minimum `OPENAI_API_KEY`, `SPOTIFY_CLIENT_ID` et `SPOTIFY_CLIENT_SECRET`, l’app les utilise toutes seules (y compris YouTube si la clé est présente), connecte Spotify sans clic et masque les champs de saisie — vous pouvez ouvrir « Remplacer pour cette session » en cas d’exception.
+3. **Barre latérale** : si la configuration est incomplète, vous pouvez saisir les clés manquantes (session locale, rien n’est enregistré sur un serveur).
 
 Le dépôt ne contient que l’exemple avec des champs vides ; chaque utilisateur remplit `secrets.toml` ou la barre latérale avec ses propres clés.
+
+**Déploiement public (Streamlit Cloud, etc.)** : ne comptez pas sur la saisie dans la barre latérale pour protéger vos clés — tout visiteur pourrait les utiliser. Configurez les secrets **uniquement** dans le tableau de bord du déploiement (ou un fichier `secrets.toml` présent uniquement sur le serveur), et laissez les champs de l’interface vides. L’application ne préremplit plus les champs à partir des secrets pour éviter qu’ils ne s’affichent dans le navigateur.
 
 ## 🔒 Confidentialité
 

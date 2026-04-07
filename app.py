@@ -101,19 +101,21 @@ if 'recommendations' not in st.session_state:
 if 'spotify_client' not in st.session_state:
     st.session_state.spotify_client = None
 
-def initialize_spotify(client_id: str, client_secret: str) -> Optional[spotipy.Spotify]:
-    """Initialise le client Spotify"""
+def initialize_spotify(
+    client_id: str, client_secret: str, *, silent: bool = False
+) -> Optional[spotipy.Spotify]:
+    """Initialise le client Spotify. Si silent=True, pas de message d'erreur (init automatique)."""
     try:
         client_credentials_manager = SpotifyClientCredentials(
             client_id=client_id,
             client_secret=client_secret
         )
         spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-        # Test de connexion
         spotify.search(q="test", type="artist", limit=1)
         return spotify
     except Exception as e:
-        st.error(f"Erreur de connexion Spotify : {str(e)}")
+        if not silent:
+            st.error(f"Erreur de connexion Spotify : {str(e)}")
         return None
 
 def search_youtube_videos(artist_name: str, track_name: str, youtube_api_key: str) -> Optional[str]:
@@ -346,17 +348,20 @@ def verify_and_enrich_recommendations(spotify: spotipy.Spotify, recommendations:
     
     return enriched_recs
 
+def _key_effective(manual: str, from_file: str) -> str:
+    return (manual or "").strip() or (from_file or "").strip()
+
+
 # Sidebar pour la configuration
 with st.sidebar:
     st.header("🔧 Configuration")
-    
-    # Tentative de chargement des secrets Streamlit
+
     default_openai = ""
     default_spotify_id = ""
     default_spotify_secret = ""
     default_youtube_key = ""
     secrets_loaded = False
-    
+
     try:
         _sec = st.secrets
         default_openai = str(_sec.get("OPENAI_API_KEY", "") or "").strip()
@@ -367,8 +372,7 @@ with st.sidebar:
             default_openai or default_spotify_id or default_spotify_secret or default_youtube_key
         )
         if secrets_loaded:
-            st.success("🔒 Clés par défaut chargées depuis secrets.toml")
-            st.info("💡 Vous pouvez remplacer ces valeurs par vos propres clés ci-dessous")
+            st.success("🔒 secrets.toml détecté")
         else:
             st.warning(
                 "⚠️ secrets.toml présent mais aucune clé renseignée — "
@@ -379,43 +383,103 @@ with st.sidebar:
             "⚠️ Aucun secrets.toml — copiez .streamlit/secrets.toml.example "
             "vers .streamlit/secrets.toml ou entrez vos clés ci-dessous"
         )
-    
-    # Clés API avec valeurs par défaut
-    st.subheader("🔑 Clés API")
-    
-    openai_api_key = st.text_input(
-        "Clé API OpenAI",
-        value=default_openai,
-        type="password",
-        placeholder="sk-... (optionnel si clés par défaut)",
-        help="Laissez vide pour utiliser les clés par défaut" if secrets_loaded else "Pour l'analyse IA des artistes"
+
+    # Mode perso : OpenAI + Spotify complets dans secrets.toml → tout automatique, sans champs visibles
+    auto_mode = bool(
+        secrets_loaded
+        and default_openai
+        and default_spotify_id
+        and default_spotify_secret
     )
-    
-    spotify_client_id = st.text_input(
-        "Spotify Client ID",
-        value=default_spotify_id,
-        placeholder="Optionnel si clés par défaut" if secrets_loaded else "Votre Client ID Spotify",
-        help="Depuis votre compte Spotify Developer"
-    )
-    
-    spotify_client_secret = st.text_input(
-        "Spotify Client Secret",
-        value=default_spotify_secret,
-        type="password",
-        placeholder="Optionnel si clés par défaut" if secrets_loaded else "Votre Client Secret",
-        help="Depuis votre compte Spotify Developer"
-    )
-    
-    youtube_api_key = st.text_input(
-        "YouTube API Key (optionnel)",
-        value=default_youtube_key,
-        type="password",
-        placeholder="Pour intégrer les vidéos YouTube",
-        help="API YouTube Data v3 - Optionnel mais recommandé pour une expérience complète"
-    )
-    
-    # Test de connexion Spotify
-    if spotify_client_id and spotify_client_secret:
+
+    if auto_mode:
+        st.info(
+            "Vos clés sont utilisées **automatiquement** depuis `.streamlit/secrets.toml` "
+            "(rien à copier dans l’interface)."
+        )
+        openai_api_key_in = ""
+        spotify_client_id_in = ""
+        spotify_client_secret_in = ""
+        youtube_api_key_in = ""
+        with st.expander("Remplacer pour cette session (optionnel)", expanded=False):
+            st.caption("Laisser vide pour garder les valeurs du fichier.")
+            openai_api_key_in = st.text_input(
+                "Clé API OpenAI",
+                value="",
+                type="password",
+                key="cfg_openai_override",
+                placeholder="Vide = secrets.toml",
+            )
+            spotify_client_id_in = st.text_input(
+                "Spotify Client ID",
+                value="",
+                type="password",
+                key="cfg_spotify_id_override",
+            )
+            spotify_client_secret_in = st.text_input(
+                "Spotify Client Secret",
+                value="",
+                type="password",
+                key="cfg_spotify_secret_override",
+            )
+            youtube_api_key_in = st.text_input(
+                "YouTube API Key (optionnel)",
+                value="",
+                type="password",
+                key="cfg_youtube_override",
+            )
+    else:
+        st.subheader("🔑 Clés API")
+        if secrets_loaded:
+            st.caption(
+                "Les champs vides utilisent les clés de `.streamlit/secrets.toml` — elles ne sont pas affichées ici."
+            )
+        else:
+            st.caption(
+                "Saisissez vos clés ci-dessous, ou créez `.streamlit/secrets.toml` pour ne rien taper dans l’interface."
+            )
+        openai_api_key_in = st.text_input(
+            "Clé API OpenAI",
+            value="",
+            type="password",
+            key="cfg_openai_v2",
+            placeholder="sk-... (laisser vide si secrets.toml)",
+            help="Vide = utiliser secrets.toml si configuré.",
+        )
+        spotify_client_id_in = st.text_input(
+            "Spotify Client ID",
+            value="",
+            type="password",
+            key="cfg_spotify_id_v2",
+            placeholder="Laisser vide si secrets.toml",
+        )
+        spotify_client_secret_in = st.text_input(
+            "Spotify Client Secret",
+            value="",
+            type="password",
+            key="cfg_spotify_secret_v2",
+            placeholder="Laisser vide si secrets.toml",
+        )
+        youtube_api_key_in = st.text_input(
+            "YouTube API Key (optionnel)",
+            value="",
+            type="password",
+            key="cfg_youtube_v2",
+            placeholder="Optionnel — laisser vide si secrets.toml",
+        )
+
+    openai_api_key = _key_effective(openai_api_key_in, default_openai)
+    spotify_client_id = _key_effective(spotify_client_id_in, default_spotify_id)
+    spotify_client_secret = _key_effective(spotify_client_secret_in, default_spotify_secret)
+    youtube_api_key = _key_effective(youtube_api_key_in, default_youtube_key)
+
+    # Connexion Spotify : automatique si identifiants présents ; bouton seulement hors mode auto complet
+    if spotify_client_id and spotify_client_secret and st.session_state.spotify_client is None:
+        sc = initialize_spotify(spotify_client_id, spotify_client_secret, silent=True)
+        if sc:
+            st.session_state.spotify_client = sc
+
+    if not auto_mode and spotify_client_id and spotify_client_secret:
         if st.button("🔗 Tester la connexion Spotify"):
             with st.spinner("Test de connexion..."):
                 spotify_client = initialize_spotify(spotify_client_id, spotify_client_secret)
@@ -424,22 +488,32 @@ with st.sidebar:
                     st.success("✅ Connexion Spotify OK !")
                 else:
                     st.error("❌ Erreur de connexion Spotify")
-    
-    # Instructions
+    elif auto_mode and st.session_state.spotify_client:
+        st.caption("✅ Spotify prêt (connexion automatique)")
+
     st.markdown("---")
     st.subheader("📋 Instructions")
-    st.markdown("""
-    1. **Ajoutez vos clés API** ci-dessus
-    2. **Testez la connexion** Spotify
-    3. **Entrez un artiste** que vous aimez
-    4. **Découvrez** de nouveaux artistes !
-    
-    💡 **Astuce :** Plus l'artiste est connu, meilleures seront les recommandations !
-    
-    🎥 **YouTube :** Ajoutez votre clé YouTube API pour voir les vidéos des artistes recommandés !
-    """)
+    if auto_mode:
+        st.markdown("""
+        1. **Entrez un artiste** que vous aimez dans la zone principale
+        2. **Découvrez** de nouveaux artistes !
+        
+        💡 **Astuce :** plus l’artiste est connu, meilleures seront les recommandations.
+        🎥 **YouTube :** si `YOUTUBE_API_KEY` est dans secrets.toml, les vidéos s’affichent automatiquement.
+        """)
+    else:
+        st.markdown("""
+        1. **Ajoutez vos clés API** ci-dessus (ou complétez `secrets.toml`)
+        2. **Testez la connexion** Spotify si besoin
+        3. **Entrez un artiste** que vous aimez
+        4. **Découvrez** de nouveaux artistes !
+        
+        💡 **Astuce :** Plus l'artiste est connu, meilleures seront les recommandations !
+        
+        🎥 **YouTube :** Ajoutez votre clé YouTube API pour voir les vidéos des artistes recommandés !
+        """)
 
-# Zone pour les comptes nécessaires
+    # Zone pour les comptes nécessaires
     st.markdown("""
     <div class="analysis-card">
         <h3>🔑 Comptes requis</h3>
