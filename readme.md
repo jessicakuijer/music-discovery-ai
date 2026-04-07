@@ -48,11 +48,16 @@
 - **Clés Spotify Developer** (obligatoire) : pour accéder aux données musicales
 - **Clé API YouTube Data v3** (optionnelle) : pour intégrer automatiquement une vidéo musicale par artiste recommandé
 
-Les clés sont à renseigner dans l'interface de l'application. Aucune donnée n'est stockée côté serveur.
+**Où renseigner les clés**
+
+1. **Fichier local (recommandé)** : copiez `.streamlit/secrets.toml.example` vers `.streamlit/secrets.toml`, ouvrez ce dernier et collez vos clés. Ce fichier est ignoré par Git : il ne part pas avec le dépôt.
+2. **Barre latérale** : vous pouvez aussi tout saisir à la main dans l’application (session locale, rien n’est enregistré sur un serveur).
+
+Le dépôt ne contient que l’exemple avec des champs vides ; chaque utilisateur remplit `secrets.toml` ou la barre latérale avec ses propres clés.
 
 ## 🔒 Confidentialité
 
-- Les clés API restent locales à votre session
+- Les clés API restent sur votre machine (`secrets.toml` non versionné ou saisie dans la barre latérale)
 - Aucune donnée utilisateur n'est collectée ou stockée
 - L'application communique uniquement avec les APIs officielles (Spotify, OpenAI, YouTube)
 

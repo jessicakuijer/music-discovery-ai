@@ -358,16 +358,27 @@ with st.sidebar:
     secrets_loaded = False
     
     try:
-        default_openai = st.secrets["OPENAI_API_KEY"]
-        default_spotify_id = st.secrets["SPOTIFY_CLIENT_ID"]
-        default_spotify_secret = st.secrets["SPOTIFY_CLIENT_SECRET"]
-        default_youtube_key = st.secrets.get("YOUTUBE_API_KEY", "")
-        secrets_loaded = True
-        
-        st.success("🔒 Clés par défaut chargées")
-        st.info("💡 Vous pouvez utiliser vos propres clés ci-dessous")
-    except:
-        st.warning("⚠️ Pas de clés par défaut - Entrez les vôtres")
+        _sec = st.secrets
+        default_openai = str(_sec.get("OPENAI_API_KEY", "") or "").strip()
+        default_spotify_id = str(_sec.get("SPOTIFY_CLIENT_ID", "") or "").strip()
+        default_spotify_secret = str(_sec.get("SPOTIFY_CLIENT_SECRET", "") or "").strip()
+        default_youtube_key = str(_sec.get("YOUTUBE_API_KEY", "") or "").strip()
+        secrets_loaded = bool(
+            default_openai or default_spotify_id or default_spotify_secret or default_youtube_key
+        )
+        if secrets_loaded:
+            st.success("🔒 Clés par défaut chargées depuis secrets.toml")
+            st.info("💡 Vous pouvez remplacer ces valeurs par vos propres clés ci-dessous")
+        else:
+            st.warning(
+                "⚠️ secrets.toml présent mais aucune clé renseignée — "
+                "complétez le fichier ou saisissez vos clés ci-dessous"
+            )
+    except Exception:
+        st.warning(
+            "⚠️ Aucun secrets.toml — copiez .streamlit/secrets.toml.example "
+            "vers .streamlit/secrets.toml ou entrez vos clés ci-dessous"
+        )
     
     # Clés API avec valeurs par défaut
     st.subheader("🔑 Clés API")
